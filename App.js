@@ -1,27 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, Appearance } from 'react-native';
-import * as screens from './screen/Screens';
-import { style } from './Style';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import * as screens from './screen/Screens'
+
+const Drawer = createDrawerNavigator();
 
 export default function App() {
-  const [isDarkMode, setIsDarkMode] = useState(Appearance.getColorScheme() === 'dark');
-
-  useEffect(() => {
-    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      setIsDarkMode(colorScheme === 'dark');
-    });
-    return () => subscription.remove();
-  }, []);
-
-  const toggleTheme = () => {
-    setIsDarkMode(prev => !prev);
-  };
-
-  return (
-    <View style={isDarkMode ? style.containerDark : style.containerLight}>
-      <StatusBar style={isDarkMode ? 'light' : 'dark'} />
-      <screens.Login isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
-    </View>
-  );
+    return (
+        <NavigationContainer>
+            <Drawer.Navigator initialRouteName="Login">
+                <Drawer.Screen name="Login" component={screens.Login} />
+                <Drawer.Screen name="Home" component={screens.Home} />
+                <Drawer.Screen name="NewTask" component={screens.NewTask} />
+                <Drawer.Screen name="Edit" component={screens.Edit} />
+            </Drawer.Navigator>
+        </NavigationContainer>
+    );
 }

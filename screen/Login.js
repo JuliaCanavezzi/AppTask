@@ -1,32 +1,76 @@
-import React from "react";
 import { style } from "../Style";
-import { Pressable, Text, TextInput, View, Image } from "react-native";
-import { MaterialIcons } from 'react-native-vector-icons';
-import { Ionicons } from 'react-native-vector-icons';
+import { Pressable, Text, TextInput, View, Image, Alert } from "react-native";
+import { initializeApp } from 'firebase/app';
+import React, { useState } from 'react';
+import { firebaseConfig } from '../firebase-config';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 
-export function Login({ isDarkMode, toggleTheme }) {
-    const containerStyle = isDarkMode ? style.containerDark : style.containerLight;
-    const textStyle = isDarkMode ? style.textDark : style.textLight;
+export function Login({ navigation }) {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const handleSignIn = () => {
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                console.log('Usuário Logado!');
+                const user = userCredential.user;
+                console.log(user);
+                Alert.alert('Login efetuado com sucesso!');
+                navigation.navigate('Home'); 
+            })
+            .catch(error => {
+                console.log(error);
+                Alert.alert('Erro ao fazer login', error.message);
+            });
+    };
+
+    const handleSignUp = () => {
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                console.log('Usuário registrado!');
+                const user = userCredential.user;
+                console.log(user);
+                Alert.alert('Cadastro efetuado com sucesso!');
+                navigation.navigate('Home'); 
+            })
+            .catch(error => {
+                console.log(error);
+                Alert.alert('Erro ao cadastrar', error.message);
+            });
+    };
 
     return (
-        <View style={containerStyle}>
-             <Pressable onPress={toggleTheme} style={style.themeButton}>
-                {isDarkMode ? (
-                    <MaterialIcons name="sunny" size={24} color="#FFF" />
-                ) : (
-                    <Ionicons name="moon-outline" size={25} color="#000" />
-                )}
-            </Pressable>
-            
+        <View style={style.container}>
             <View style={style.top}>
                 <Image source={require('../assets/task.png')} style={style.image} />
-                <Text style={[style.title, textStyle]}>App Task</Text>
+                <Text style={style.title}>App Task</Text>
             </View>
-            
-            <TextInput style={style.input} placeholder="Digite seu Usuário" placeholderTextColor={isDarkMode ? '#ccc' : '#000'} />
-            <TextInput style={style.input} placeholder="Digite sua Senha" placeholderTextColor={isDarkMode ? '#ccc' : '#000'} />
-            <Pressable style={style.button}>
+
+            <TextInput
+                style={style.input}
+                placeholder="Digite seu E-mail"
+                onChangeText={(text) => setEmail(text)}
+                value={email} 
+            />
+            <TextInput
+                style={style.input}
+                placeholder="Digite sua Senha"
+                onChangeText={(text) => setPassword(text)}
+                secureTextEntry={true}
+                value={password} 
+            />
+            <Pressable onPress={handleSignIn} style={style.button}> 
                 <Text style={style.textButton}>Log-in</Text>
+            </Pressable>
+
+            <Text style={style.or}>ou</Text> 
+
+            <Pressable onPress={handleSignUp}>
+                <Text style={{ color: 'black', fontSize: 15}}>Cadastrar-se</Text>
+                <View style={style.underline} />
             </Pressable>
         </View>
     );
