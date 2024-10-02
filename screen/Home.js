@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { style } from "../Style";
-import { ScrollView } from "react-native"; // Corrigido para "react-native"
+import Modal from "react-native-modal"; 
+import { ScrollView } from "react-native"; 
 import { StatusBar } from "expo-status-bar";
 import { Pressable, SafeAreaView, Text, View, Alert } from "react-native";
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -9,6 +10,8 @@ import { getFirestore, collection, deleteDoc, doc, getDocs, updateDoc } from "fi
 
 export function Home({ navigation }) {
   const [tasks, setTasks] = useState([]); 
+  const [modalVisible, setModalVisible] = useState(false); 
+  const [taskToDelete, setTaskToDelete] = useState(null); 
   const db = getFirestore(); 
 
   useEffect(() => {
@@ -27,13 +30,22 @@ export function Home({ navigation }) {
     });
   };
 
-  const deleteTask = async (id) => {
-    try {
-      await deleteDoc(doc(db, "tasks", id));
-      fetchTasks();
-    } catch (error) {
-      Alert.alert("Erro", "Erro ao excluir tarefa: " + error.message);
+  const confirmDeleteTask = (id) => {
+    setTaskToDelete(id); 
+    setModalVisible(true);
+  };
+
+  const deleteTask = async () => {
+    if (taskToDelete) {
+      try {
+        await deleteDoc(doc(db, "tasks", taskToDelete));
+        fetchTasks();
+      } catch (error) {
+        Alert.alert("Erro", "Erro ao excluir tarefa: " + error.message);
+      }
+      setTaskToDelete(null);
     }
+    setModalVisible(false); 
   };
 
   const toggleTaskStatus = async (id, currentStatus) => {
@@ -68,7 +80,7 @@ export function Home({ navigation }) {
           </Pressable>
           <Pressable
             style={[style.btnSm, { backgroundColor: "red", marginLeft: 8 }]}
-            onPress={() => deleteTask(task.id)} 
+            onPress={() => confirmDeleteTask(task.id)} 
           >
             <Icon name="trash" size={20} color="#fff" />
           </Pressable>
@@ -88,7 +100,7 @@ export function Home({ navigation }) {
 
   return (
     <SafeAreaView style={style.newCont}>
-       <ScrollView style={{ paddingBottom: 60, paddingHorizontal: 16 }}> 
+      <ScrollView style={{ paddingBottom: 60, paddingHorizontal: 16 }}> 
         {tasks.map(task => (
           <Item key={task.id} task={task} />
         ))}
@@ -96,6 +108,25 @@ export function Home({ navigation }) {
       <Pressable onPress={goToNewTask} style={style.addButton}>
         <Text style={style.txtAdd}>+</Text>
       </Pressable>
+
+      
+      <Modal
+        isVisible={modalVisible}
+        onBackdropPress={() => setModalVisible(false)} 
+      >
+        <View style={style.modalContent}>
+          <Text style={style.modalText}>Certeza que deseja excluir essa tarefa?</Text>
+          <View style={style.modalButtons}>
+            <Pressable onPress={deleteTask} style={[style.modalButton, style.confirmButton]}>
+              <Text style={style.buttonText}>Sim</Text>
+            </Pressable>
+            <Pressable onPress={() => setModalVisible(false)} style={[style.modalButton, style.cancelButton]}>
+              <Text style={style.buttonText}>Não</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+      
       <StatusBar style="auto" />
     </SafeAreaView>
   );

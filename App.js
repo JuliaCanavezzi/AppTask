@@ -9,7 +9,7 @@ export default function App() {
     return (
         <NavigationContainer>
             <Drawer.Navigator initialRouteName="Login">
-                <Drawer.Screen name="Login" component={screens.Login} />
+                <Drawer.Screen name="Login" component={screens.Login}  options={{headerShown:false}}/>
                 <Drawer.Screen name="Home" component={screens.Home} />
                 <Drawer.Screen name="NewTask" component={screens.NewTask} />
                 <Drawer.Screen name="Edit" component={screens.Edit} />
