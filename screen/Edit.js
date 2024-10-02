@@ -4,8 +4,16 @@ import { getFirestore, doc, updateDoc } from "firebase/firestore";
 import { useState } from "react";
 
 export function Edit({ navigation, route }) {
-    const { task, onGoBack } = route.params;
+    const { task, onGoBack } = route.params || {}; // Aqui está a linha 7
     const db = getFirestore();
+
+    if (!task) {
+        return (
+            <View>
+                <Text>Task não encontrada. Verifique a navegação.</Text>
+            </View>
+        );
+    }
 
     const [title, setTitle] = useState(task.title);
     const [dueDate, setDueDate] = useState(task.dueDate);
